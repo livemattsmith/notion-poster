@@ -2,16 +2,15 @@ import requests
 import os
 import json
 
-# Read Notion token from environment variable in Vercel
 NOTION_TOKEN = os.environ["NOTION_TOKEN"]
 NOTION_VERSION = os.environ.get("NOTION_VERSION", "2022-06-28")
 
-def handler(request, response):
+def handler(request):
     try:
-        # Read the incoming JSON payload
-        body = request.json()
+        # Read incoming JSON body
+        body = json.loads(request.body.decode())
 
-        # Forward request to Notion API
+        # Send request to Notion
         r = requests.post(
             "https://api.notion.com/v1/pages",
             headers={
@@ -22,8 +21,7 @@ def handler(request, response):
             data=json.dumps(body)
         )
 
-        # Return Notion's response
-        return response.status(r.status_code).json(r.json())
+        return r.json(), r.status_code
 
     except Exception as e:
-        return response.status(500).json({"error": str(e)})
+        return {"error": str(e)}, 500
